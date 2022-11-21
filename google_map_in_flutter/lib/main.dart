@@ -21,6 +21,16 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
   bool _isMapCreated = false;
 
   bool _showUser = false;
@@ -31,7 +41,7 @@ class _MyAppState extends State<MyApp> {
   late GoogleMapController _mapController;
 
   static const CameraPosition _kInitialPosition = CameraPosition(
-    target: LatLng(45.521563, -122.677433),
+    target: LatLng(45.3531, -75.9147),
     zoom: 11.0,
   );
 
@@ -50,6 +60,42 @@ class _MyAppState extends State<MyApp> {
       onChanged: (bool value) {
         setState(() {
           _scrollEnabled = value;
+        });
+      },
+    );
+  }
+
+  Widget _zoomToggler() {
+    return SwitchListTile(
+      title: const Text('ZoomGestures'),
+      value: _zoomGesturesEnabled,
+      onChanged: (bool value) {
+        setState(() {
+          _zoomGesturesEnabled = value;
+        });
+      },
+    );
+  }
+
+  Widget _zoomControlsToggler() {
+    return SwitchListTile(
+      title: const Text('Zoom Control'),
+      value: _zoomEnabled,
+      onChanged: (bool value) {
+        setState(() {
+          _zoomEnabled = value;
+        });
+      },
+    );
+  }
+
+  Widget _myLocationToggler() {
+    return SwitchListTile(
+      title: const Text('Show User'),
+      value: _showUser,
+      onChanged: (bool value) {
+        setState(() {
+          _showUser = value;
         });
       },
     );
@@ -86,12 +132,9 @@ class _MyAppState extends State<MyApp> {
           child: ListView(
             children: <Widget>[
               _scrollToggler(),
-/*
               _zoomToggler(),
               _zoomControlsToggler(),
               _myLocationToggler(),
-              _myLocationButtonToggler(),
-              */
             ],
           ),
         ),
