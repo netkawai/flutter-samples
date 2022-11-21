@@ -1,74 +1,7 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
 import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:google_maps_flutter_android/google_maps_flutter_android.dart';
 import 'package:google_maps_flutter_platform_interface/google_maps_flutter_platform_interface.dart';
-
-import 'animate_camera.dart';
-import 'lite_mode.dart';
-import 'map_click.dart';
-import 'map_coordinates.dart';
-import 'map_ui.dart';
-import 'marker_icons.dart';
-import 'move_camera.dart';
-import 'padding.dart';
-import 'page.dart';
-import 'place_circle.dart';
-import 'place_marker.dart';
-import 'place_polygon.dart';
-import 'place_polyline.dart';
-import 'scrolling_map.dart';
-import 'snapshot.dart';
-import 'tile_overlay.dart';
-
-final List<GoogleMapExampleAppPage> _allPages = <GoogleMapExampleAppPage>[
-  const MapUiPage(),
-  const MapCoordinatesPage(),
-  const MapClickPage(),
-  const AnimateCameraPage(),
-  const MoveCameraPage(),
-  const PlaceMarkerPage(),
-  const MarkerIconsPage(),
-  const ScrollingMapPage(),
-  const PlacePolylinePage(),
-  const PlacePolygonPage(),
-  const PlaceCirclePage(),
-  const PaddingPage(),
-  const SnapshotPage(),
-  const LiteModePage(),
-  const TileOverlayPage(),
-];
-
-/// MapsDemo is the Main Application.
-class MapsDemo extends StatelessWidget {
-  /// Default Constructor
-  const MapsDemo({Key? key}) : super(key: key);
-
-  void _pushPage(BuildContext context, GoogleMapExampleAppPage page) {
-    Navigator.of(context).push(MaterialPageRoute<void>(
-        builder: (_) => Scaffold(
-              appBar: AppBar(title: Text(page.title)),
-              body: page,
-            )));
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('GoogleMaps examples')),
-      body: ListView.builder(
-        itemCount: _allPages.length,
-        itemBuilder: (_, int index) => ListTile(
-          leading: _allPages[index].leading,
-          title: Text(_allPages[index].title),
-          onTap: () => _pushPage(context, _allPages[index]),
-        ),
-      ),
-    );
-  }
-}
 
 void main() {
   final GoogleMapsFlutterPlatform mapsImplementation =
@@ -76,5 +9,101 @@ void main() {
   if (mapsImplementation is GoogleMapsFlutterAndroid) {
     mapsImplementation.useAndroidViewSurface = true;
   }
-  runApp(const MaterialApp(home: MapsDemo()));
+
+  runApp(const MaterialApp(title: 'MapDemo', home: MyApp()));
+}
+
+class MyApp extends StatefulWidget {
+  const MyApp({super.key});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  bool _isMapCreated = false;
+
+  bool _showUser = false;
+  bool _zoomEnabled = false;
+  bool _zoomGesturesEnabled = false;
+  bool _scrollEnabled = false;
+//  late Location location;
+  late GoogleMapController _mapController;
+
+  static const CameraPosition _kInitialPosition = CameraPosition(
+    target: LatLng(45.521563, -122.677433),
+    zoom: 11.0,
+  );
+
+  void _onMapCreated(GoogleMapController controller) {
+    setState(() {
+      _mapController = controller;
+      _isMapCreated = true;
+    });
+    //location = Location();
+  }
+
+  Widget _scrollToggler() {
+    return SwitchListTile(
+      title: const Text('ScrollGestures'),
+      value: _scrollEnabled,
+      onChanged: (bool value) {
+        setState(() {
+          _scrollEnabled = value;
+        });
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final GoogleMap googleMap = GoogleMap(
+      onMapCreated: _onMapCreated,
+      initialCameraPosition: _kInitialPosition,
+      scrollGesturesEnabled: _scrollEnabled,
+      zoomGesturesEnabled: _zoomGesturesEnabled,
+      zoomControlsEnabled: _zoomEnabled,
+      myLocationEnabled: _showUser,
+      myLocationButtonEnabled: true,
+    );
+
+    final List<Widget> columnChildren = <Widget>[
+      Padding(
+        padding: const EdgeInsets.all(10.0),
+        child: Center(
+          child: SizedBox(
+            width: 300.0,
+            height: 400.0,
+            child: googleMap,
+          ),
+        ),
+      ),
+    ];
+
+    if (_isMapCreated) {
+      columnChildren.add(
+        Expanded(
+          child: ListView(
+            children: <Widget>[
+              _scrollToggler(),
+/*
+              _zoomToggler(),
+              _zoomControlsToggler(),
+              _myLocationToggler(),
+              _myLocationButtonToggler(),
+              */
+            ],
+          ),
+        ),
+      );
+    }
+    return Scaffold(
+        appBar: AppBar(
+          title: const Text('Map Demo'),
+        ),
+        body: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: columnChildren,
+        ));
+  }
 }
